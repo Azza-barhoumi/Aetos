@@ -345,9 +345,15 @@ export function AetosChat({ userContext, onComplete, autoTriggerCV, sessionId, o
             return next;
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Calibration error. Re-initiating neural link..." }]);
+      const isDomainError = error.message?.includes("unauthorized-domain");
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: isDomainError 
+          ? "CRITICAL: Domain access denied. This URL must be whitelisted in the Firebase Console (Authentication > Settings > Authorized Domains)." 
+          : "Neural Link Disrupted: A cognitive conflict has delayed the synthesis. Please retry your last transmission or check your network link." 
+      }]);
     } finally {
       setIsLoading(false);
     }

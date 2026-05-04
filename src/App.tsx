@@ -33,6 +33,14 @@ export default function App() {
 
   const [loginError, setLoginError] = useState<string | null>(null);
 
+  const [isCalibrating, setIsCalibrating] = useState(true);
+
+  useEffect(() => {
+    // Neural Link Initiation Sequence
+    const timer = setTimeout(() => setIsCalibrating(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -48,13 +56,21 @@ export default function App() {
       setLoginError(null);
     } catch (error: any) {
       console.error("Login failed", error);
-      setLoginError(error.message || "Login failed. Check your connection or popup settings.");
+      let msg = error.message || "Login failed. Check your connection or popup settings.";
+      if (msg.includes("unauthorized-domain")) {
+        msg = "Unauthorized Domain: Please add this URL to your Firebase Console 'Authorized Domains' whitelist.";
+      }
+      setLoginError(msg);
     } finally {
       setAuthLoading(false);
     }
   };
 
   const handleStepChange = async (newStep: JourneyStep) => {
+    if (newStep !== 'landing') {
+      setIsCalibrating(true);
+      setTimeout(() => setIsCalibrating(false), 1500);
+    }
     if (!user && newStep !== 'landing') {
       await handleLogin();
       // Only change step if login succeeded
@@ -97,7 +113,46 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-midnight selection:bg-ambition selection:text-midnight">
+    <div className="relative min-h-screen bg-midnight selection:bg-ambition selection:text-midnight overflow-x-hidden">
+      <AnimatePresence>
+        {isCalibrating && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-midnight flex flex-col items-center justify-center p-6 text-center"
+          >
+            <div className="absolute inset-0 data-grid-bg opacity-10" />
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ repeat: Infinity, duration: 4 }}
+              className="relative w-24 h-24 mb-12"
+            >
+              <div className="absolute inset-0 border-2 border-ambition/30 rounded-full animate-ping" />
+              <div className="absolute inset-2 border border-ambition/20 rounded-full flex items-center justify-center">
+                <Bird className="w-8 h-8 text-ambition" />
+              </div>
+            </motion.div>
+            <h2 className="text-xl font-mono text-ambition uppercase tracking-[0.4em] mb-4">Neural Link Active</h2>
+            <div className="w-64 h-1 bg-white/5 rounded-full overflow-hidden relative">
+              <motion.div 
+                initial={{ x: "-100%" }}
+                animate={{ x: "200%" }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-ambition to-transparent"
+              />
+            </div>
+            <div className="mt-8 grid grid-cols-1 gap-2 text-[8px] font-mono text-white/30 uppercase tracking-widest">
+              <p>Inference Engine: OK</p>
+              <p>Semantic Buffer: LOCK</p>
+              <p>Archetype Buffer: CALIBRATING...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background System */}
       <div className="fixed inset-0 data-grid-bg opacity-10 pointer-events-none" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] mythic-gradient opacity-40 pointer-events-none blur-3xl" />
