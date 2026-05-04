@@ -95,3 +95,12 @@ export const getSession = async (userId: string, sessionId: string): Promise<Cha
 };
 
 export const logout = () => auth.signOut();
+
+export const getProfile = async (userId: string): Promise<UserProfile | null> => {
+  const userRef = doc(db, 'users', userId);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    return snap.data() as UserProfile;
+  }
+  return null;
+};

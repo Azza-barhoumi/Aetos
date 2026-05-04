@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ARCHETYPES } from "../constants";
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -7,7 +7,7 @@ export const getGemini = () => {
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not defined");
   }
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 };
 
 export const getAetosPrompt = (userContext?: string) => `

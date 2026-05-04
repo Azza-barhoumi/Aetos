@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { ChevronRight, LayoutDashboard, Compass, Send, Menu, ShieldCheck, LogIn, LogOut, User as UserIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { auth, signInWithGoogle, logout } from "../services/firebase";
-import { User } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,8 +23,8 @@ export function Header() {
           </div>
           
           <div className="hidden md:flex items-center gap-6 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
-            <a href="#" className="hover:text-ambition transition-colors">Mission</a>
-            <a href="#" className="hover:text-ambition transition-colors">Technology</a>
+            <button onClick={() => document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-ambition transition-colors">Mission</button>
+            <button onClick={() => document.getElementById('technology')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-ambition transition-colors">Technology</button>
           </div>
         </div>
 
@@ -61,5 +61,4 @@ export function Header() {
   );
 }
 
-// Add this to make it build if onAuthStateChanged is missing from imports
-import { onAuthStateChanged } from "firebase/auth";
+// End of Header

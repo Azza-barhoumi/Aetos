@@ -3,7 +3,7 @@ import { Search, Share2, Layers, Zap, Heart, Braces } from "lucide-react";
 
 export function Blueprint() {
   return (
-    <section className="py-32 px-6 max-w-6xl mx-auto">
+    <section id="mission" className="py-32 px-6 max-w-6xl mx-auto">
       <div className="text-center mb-24">
         <h2 className="text-4xl md:text-5xl font-serif mb-6 italic">The Aetos Architecture</h2>
         <p className="text-white/40 max-w-2xl mx-auto font-sans font-light">

@@ -2,7 +2,9 @@ import React from "react";
 import { motion } from "motion/react";
 import { Sparkles, Trophy, Target, Shield, Cpu } from "lucide-react";
 
-export function Hero({ onUpload }: { onUpload?: () => void }) {
+export function Hero({ onUpload, onStart }: { onUpload?: () => void, onStart?: () => void }) {
+  const [showVideo, setShowVideo] = React.useState(false);
+
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 px-6 overflow-hidden">
       <div className="absolute inset-0 data-grid-bg opacity-20 pointer-events-none" />
@@ -34,21 +36,29 @@ export function Hero({ onUpload }: { onUpload?: () => void }) {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <button className="group relative w-full sm:w-auto px-12 py-6 bg-ambition text-midnight font-black rounded-2xl hover:scale-105 active:scale-95 transition-all text-xs uppercase tracking-[.2em] cursor-pointer shadow-[0_20px_50px_rgba(212,175,55,0.2)]">
+          <button 
+            onClick={onStart}
+            className="group relative w-full sm:w-auto px-12 py-6 bg-ambition text-midnight font-black rounded-2xl hover:scale-105 active:scale-95 transition-all text-xs uppercase tracking-[.2em] cursor-pointer shadow-[0_20px_50px_rgba(212,175,55,0.2)]"
+          >
             Begin Calibration
             <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
           </button>
           
-          <div className="flex items-center gap-4">
-             <span className="text-white/20 font-mono text-[10px] uppercase tracking-widest hidden sm:block">OR</span>
-             <button 
-               onClick={onUpload}
-               className="group flex items-center gap-3 px-8 py-5 glass-dark text-white font-bold rounded-2xl hover:bg-white/10 active:scale-95 transition-all text-[10px] uppercase tracking-widest border border-white/5"
-             >
-               <Cpu className="w-5 h-5 text-ambition" />
-               Upload CV for Fast-Track
-             </button>
-          </div>
+          <button 
+            onClick={onUpload}
+            className="group flex items-center gap-3 px-8 py-5 glass-dark text-white font-bold rounded-2xl hover:bg-white/10 active:scale-95 transition-all text-[10px] uppercase tracking-widest border border-white/5"
+          >
+            <Cpu className="w-5 h-5 text-ambition" />
+            Upload CV
+          </button>
+
+          <button 
+            onClick={() => setShowVideo(true)}
+            className="group flex items-center gap-2 text-[10px] font-mono text-white/40 uppercase tracking-widest hover:text-white transition-colors"
+          >
+            <span className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-ambition group-hover:text-ambition transition-all">▶</span>
+            Watch Protocol
+          </button>
         </div>
       </motion.div>
 

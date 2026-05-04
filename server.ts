@@ -2,7 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import cors from "cors";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 async function startServer() {
   const app = express();
@@ -48,10 +48,10 @@ async function startServer() {
     }
 
     try {
-      const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await genAI.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      const prompt = `
         You are the Aetos Ingestion Protocol. 
         TASK: Semantically align the provided CV to the Target Job Description.
         RULES:
@@ -64,10 +64,10 @@ async function startServer() {
 
         TARGET JOB:
         ${jobDescription}
-      `
-      });
+      `;
 
-      res.json({ optimizedCv: response.text });
+      const result = await model.generateContent(prompt);
+      res.json({ optimizedCv: result.response.text() });
     } catch (error) {
       console.error("CV Loom Error:", error);
       res.status(500).json({ error: "Failed to optimize CV" });

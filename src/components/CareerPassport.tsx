@@ -11,14 +11,24 @@ export function CareerPassport() {
     if (!isShared) {
       setIsLoading(true);
       try {
-        // Generating passport via our backend API
-        const response = await fetch("/api/v2/career-passport/user-123?job_id=bi-dev");
-        const data = await response.json();
-        setPassportData(data.passport);
-        setIsShared(true);
+        // Simulating passport generation based on user persona
+        setTimeout(() => {
+          const mockPassport = {
+            anonymizedId: `AETOS-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+            zScore: Math.floor(Math.random() * 15) + 85,
+            verifiedSkills: ["Strategic Planning", "Architecture", "Deep Inference"],
+            privacyLevel: "Sovereign-4",
+            metadata: {
+                timestamp: new Date().toISOString(),
+                node: "London-Alpha"
+            }
+          };
+          setPassportData(mockPassport);
+          setIsShared(true);
+          setIsLoading(false);
+        }, 1500);
       } catch (error) {
         console.error(error);
-      } finally {
         setIsLoading(false);
       }
     } else {

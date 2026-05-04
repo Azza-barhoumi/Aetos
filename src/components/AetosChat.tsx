@@ -224,18 +224,21 @@ export function AetosChat({ userContext, onComplete, autoTriggerCV, sessionId, o
       });
       
       const ai = getGemini();
-      const chat = ai.chats.create({
-          model: "gemini-3-flash-preview",
-          config: {
-              systemInstruction: getAetosPrompt(`PRIOR DATA: ${JSON.stringify(userContext || {})}\nCV CONTENT:\n${strippedText}`)
-          }
+      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const chat = model.startChat({
+          history: [],
+          generationConfig: {
+              maxOutputTokens: 2000,
+          },
       });
       
-      const response = await chat.sendMessage({
-          message: "I have uploaded my CV. Identify my current trajectory (last role/company) to verify ingestion, then begin Turn 1 of DCSF calibration with MCQ Options. Do not mention anything not in the text."
-      });
+      const response = await chat.sendMessage(`
+        SYSTEM_INSTRUCTION: ${getAetosPrompt(`PRIOR DATA: ${JSON.stringify(userContext || {})}\nCV CONTENT:\n${strippedText}`)}
+        
+        USER: I have uploaded my CV. Identify my current trajectory (last role/company) to verify ingestion, then begin Turn 1 of DCSF calibration with MCQ Options. Do not mention anything not in the text.
+      `);
       
-      const textResponse = response.text ?? "";
+      const textResponse = response.response.text();
       let displayContent = textResponse;
       let options: string[] = [];
 
@@ -278,23 +281,20 @@ export function AetosChat({ userContext, onComplete, autoTriggerCV, sessionId, o
     try {
       const ai = getGemini();
       const contextString = `Context: ${JSON.stringify(userContext || {})}\nCV: ${cvContext || "None"}\nTurn: ${turnCount}/12`;
+      const systemInstruction = getAetosPrompt(contextString);
+
+      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
       
-      const chat = ai.chats.create({
-        model: "gemini-3-flash-preview",
-        config: {
-            systemInstruction: getAetosPrompt(contextString)
-        },
+      const chat = model.startChat({
         history: messages.map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }]
         }))
       });
 
-      const response = await chat.sendMessage({
-          message: userMessage
-      });
+      const response = await chat.sendMessage(`SYSTEM_INSTRUCTION: ${systemInstruction}\n\nUSER: ${userMessage}`);
       
-      const text = response.text ?? "";
+      const text = response.response.text();
       setTurnCount(prev => prev + 1);
       
       if (text.includes("---SYNTHESIS_COMPLETE---")) {

@@ -9,6 +9,8 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Blueprint } from './components/Blueprint';
 import { LivePulse } from './components/LivePulse';
+import { Features } from './components/Features';
+import { CTA } from './components/CTA';
 import { AetosChat } from './components/AetosChat';
 import { Revelation } from './components/Revelation';
 import { CVLoom } from './components/CVLoom';
@@ -102,9 +104,12 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <Hero onUpload={handleStartWithCV} />
+              <Hero onUpload={handleStartWithCV} onStart={() => handleStepChange('conversation')} />
               <Blueprint />
+              <Features />
               <LivePulse />
+              <CTA onStart={() => handleStepChange('conversation')} user={user} />
+              
               <div className="flex justify-center mt-12 mb-20 px-6">
                 {!user ? (
                    <motion.button 

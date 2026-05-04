@@ -4,7 +4,7 @@ import { Activity, Bell, RefreshCcw, ShieldCheck } from "lucide-react";
 
 export function LivePulse() {
   return (
-    <section className="py-32 px-6 max-w-6xl mx-auto border-t border-white/5">
+    <section id="technology" className="py-32 px-6 max-w-6xl mx-auto border-t border-white/5">
       <div className="grid lg:grid-cols-2 gap-20 items-center">
         <div className="space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-glow/10 border border-cyan-glow/20 rounded-full">

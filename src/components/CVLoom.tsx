@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FileText, Cpu, Check, Loader2, Info } from "lucide-react";
+import { getGemini } from "../services/geminiService";
 
 export function CVLoom() {
   const [cvText, setCvText] = useState("");
@@ -9,15 +10,30 @@ export function CVLoom() {
   const [optimizedCv, setOptimizedCv] = useState<string | null>(null);
 
   const handleOptimize = async () => {
+    if (!cvText || !jobDesc) return;
     setIsOptimizing(true);
     try {
-      const response = await fetch("/api/cv-loom/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cvText, jobDescription: jobDesc })
-      });
-      const data = await response.json();
-      setOptimizedCv(data.optimizedCv);
+      const ai = getGemini();
+      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      const prompt = `
+        You are the Aetos CV Loom, a high-precision semantic alignment engine.
+        Your task is to re-weave the following CV text to perfectly align with the target Job Description.
+        Maintain absolute integrity of the original facts, but shift the narrative focus, keywords, and priority to match the job requirements.
+        Use a high-fidelity, professional, and slightly strategic tone.
+        
+        ORIGINAL CV:
+        ${cvText}
+        
+        TARGET JOB DESCRIPTION:
+        ${jobDesc}
+        
+        Return ONLY the optimized CV text. No conversational filler.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      setOptimizedCv(text);
     } catch (error) {
       console.error(error);
     } finally {
