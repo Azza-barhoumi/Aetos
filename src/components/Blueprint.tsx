@@ -5,9 +5,10 @@ export function Blueprint() {
   return (
     <section id="mission" className="py-32 px-6 max-w-6xl mx-auto">
       <div className="text-center mb-24">
-        <h2 className="text-4xl md:text-5xl font-serif mb-6 italic">The Aetos Architecture</h2>
-        <p className="text-white/40 max-w-2xl mx-auto font-sans font-light">
-          Cognitive alignment meets systemic precision.
+        <span className="text-[10px] font-mono text-ambition uppercase tracking-[0.4em] font-black block mb-4">Semantic Infrastructure</span>
+        <h2 className="text-4xl md:text-6xl font-serif mb-6 italic tracking-tighter">The Aetos Architecture.</h2>
+        <p className="text-white/40 max-w-2xl mx-auto font-sans font-light text-lg leading-relaxed">
+          Cognitive alignment meets systemic precision. Aetos maps the professional psyche across cognitive domains, identifying the specific "Echo" that defines your contribution to the global market.
         </p>
       </div>
 

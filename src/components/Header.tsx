@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { auth, signInWithGoogle, logout } from "../services/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 
-export function Header() {
+export function Header({ onStepChange }: { onStepChange?: (step: any) => void }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -36,15 +36,21 @@ export function Header() {
           
           {user ? (
             <div className="flex items-center gap-3">
-               <div className="hidden md:block text-right">
+               <button 
+                 onClick={() => onStepChange?.('profile')}
+                 className="hidden md:block text-right hover:opacity-80 transition-opacity"
+               >
                  <p className="text-[10px] font-mono text-white/80 uppercase font-bold leading-none">{user.displayName}</p>
-                 <button onClick={logout} className="text-[8px] font-mono text-ambition/60 uppercase hover:text-ambition transition-colors">Log Out</button>
+                 <span className="text-[8px] font-mono text-ambition/60 uppercase">View Protocol</span>
+               </button>
+               <div className="flex items-center gap-2">
+                 {user.photoURL ? (
+                    <img src={user.photoURL} className="w-8 h-8 rounded-full border border-ambition/30 cursor-pointer" onClick={() => onStepChange?.('profile')} referrerPolicy="no-referrer" />
+                 ) : (
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/40 cursor-pointer" onClick={() => onStepChange?.('profile')}><UserIcon className="w-4 h-4" /></div>
+                 )}
+                 <button onClick={logout} className="p-2 text-white/20 hover:text-white transition-colors"><LogOut className="w-4 h-4" /></button>
                </div>
-               {user.photoURL ? (
-                 <img src={user.photoURL} className="w-8 h-8 rounded-full border border-ambition/30" referrerPolicy="no-referrer" />
-               ) : (
-                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/40"><UserIcon className="w-4 h-4" /></div>
-               )}
             </div>
           ) : (
             <button 

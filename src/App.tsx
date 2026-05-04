@@ -38,9 +38,14 @@ export default function App() {
     });
   }, []);
 
-  const handleStepChange = (newStep: JourneyStep) => {
+  const handleStepChange = async (newStep: JourneyStep) => {
     if (!user && newStep !== 'landing') {
-      signInWithGoogle();
+      try {
+        const u = await signInWithGoogle();
+        if (u) setStep(newStep);
+      } catch (error) {
+        console.error("Login canceled or failed");
+      }
       return;
     }
     setStep(newStep);
@@ -84,7 +89,7 @@ export default function App() {
       <div className="fixed inset-0 data-grid-bg opacity-10 pointer-events-none" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] mythic-gradient opacity-40 pointer-events-none blur-3xl" />
       
-      <Header />
+      <Header onStepChange={handleStepChange} />
       
       {user && (
         <SessionSidebar 
