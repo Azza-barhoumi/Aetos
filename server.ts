@@ -55,6 +55,11 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Aetos Protocol running on http://localhost:${PORT}`);
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn("WARNING: GEMINI_API_KEY is not defined in the server environment.");
+    } else {
+      console.log("GEMINI_API_KEY is defined in the server environment.");
+    }
   });
 }
 

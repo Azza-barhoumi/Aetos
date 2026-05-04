@@ -4,11 +4,13 @@ import { ARCHETYPES } from "../constants";
 export const GEMINI_MODEL = "gemini-3-flash-preview";
 
 export const getGemini = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || (import.meta as any).env?.VITE_GEMINI_API_KEY;
+  
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not defined in the environment. Please ensure it is set in the AI Studio settings.");
+    console.warn("GEMINI_API_KEY not found in process.env or import.meta.env. The Aetos Protocol may fail to initialize.");
   }
-  return new GoogleGenAI({ apiKey });
+
+  return new GoogleGenAI({ apiKey: apiKey || "" });
 };
 
 export const getAetosSystemInstruction = (userContext?: string) => `
