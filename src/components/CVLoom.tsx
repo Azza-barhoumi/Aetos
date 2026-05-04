@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FileText, Cpu, Check, Loader2, Info } from "lucide-react";
-import { getGemini } from "../services/geminiService";
+import { getGemini, GEMINI_MODEL } from "../services/geminiService";
 
 export function CVLoom() {
   const [cvText, setCvText] = useState("");
@@ -9,33 +9,45 @@ export function CVLoom() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedCv, setOptimizedCv] = useState<string | null>(null);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleOptimize = async () => {
     if (!cvText || !jobDesc) return;
     setIsOptimizing(true);
+    setError(null);
     try {
       const ai = getGemini();
-      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-      
-      const prompt = `
+      const systemInstruction = `
         You are the Aetos CV Loom, a high-precision semantic alignment engine.
         Your task is to re-weave the following CV text to perfectly align with the target Job Description.
         Maintain absolute integrity of the original facts, but shift the narrative focus, keywords, and priority to match the job requirements.
         Use a high-fidelity, professional, and slightly strategic tone.
-        
+        Return ONLY the optimized CV text. No conversational filler.
+      `;
+
+      const prompt = `
         ORIGINAL CV:
         ${cvText}
         
         TARGET JOB DESCRIPTION:
         ${jobDesc}
-        
-        Return ONLY the optimized CV text. No conversational filler.
       `;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const result = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: [{ parts: [{ text: prompt }] }],
+        config: {
+          systemInstruction,
+        }
+      });
+      
+      const text = result.text;
+      if (!text) throw new Error("Recieved empty response from Aetos Protocol.");
+      
       setOptimizedCv(text);
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "An unexpected error occurred during optimization.");
     } finally {
       setIsOptimizing(false);
     }
@@ -75,6 +87,15 @@ export function CVLoom() {
               />
             </div>
           </div>
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono">
+              <div className="flex items-center gap-2 mb-1">
+                <Info className="w-3 h-3" />
+                <span className="font-bold">SYSTEM ERROR</span>
+              </div>
+              {error}
+            </div>
+          )}
           <button 
             onClick={handleOptimize}
             disabled={!cvText || !jobDesc || isOptimizing}

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Bird, Bot, User, Sparkles, Loader2, RefreshCw, Paperclip, CheckSquare, ListFilter, AlertTriangle, Mic, MicOff } from "lucide-react";
-import { getGemini, getAetosPrompt } from "../services/geminiService";
+import { getGemini, getAetosSystemInstruction, GEMINI_MODEL } from "../services/geminiService";
 import { extractTextFromPDF } from "../lib/pdfExtractor";
 import { saveSession, getSession } from "../services/firebase";
 import { ChatMessage, ChatSession } from "../types";
@@ -224,21 +224,17 @@ export function AetosChat({ userContext, onComplete, autoTriggerCV, sessionId, o
       });
       
       const ai = getGemini();
-      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const chat = model.startChat({
-          history: [],
-          generationConfig: {
-              maxOutputTokens: 2000,
+      const systemInstruction = getAetosSystemInstruction(`PRIOR DATA: ${JSON.stringify(userContext || {})}\nCV CONTENT:\n${strippedText}`);
+      const chat = ai.chats.create({
+          model: GEMINI_MODEL,
+          config: {
+              systemInstruction,
           },
       });
       
-      const response = await chat.sendMessage(`
-        SYSTEM_INSTRUCTION: ${getAetosPrompt(`PRIOR DATA: ${JSON.stringify(userContext || {})}\nCV CONTENT:\n${strippedText}`)}
-        
-        USER: I have uploaded my CV. Identify my current trajectory (last role/company) to verify ingestion, then begin Turn 1 of DCSF calibration with MCQ Options. Do not mention anything not in the text.
-      `);
+      const response = await chat.sendMessage({ message: `I have uploaded my CV. Identify my current trajectory (last role/company) to verify ingestion, then begin Turn 1 of DCSF calibration with MCQ Options. Do not mention anything not in the text.` });
       
-      const textResponse = response.response.text();
+      const textResponse = response.text;
       let displayContent = textResponse;
       let options: string[] = [];
 
@@ -279,22 +275,24 @@ export function AetosChat({ userContext, onComplete, autoTriggerCV, sessionId, o
     setIsLoading(true);
 
     try {
-      const ai = getGemini();
       const contextString = `Context: ${JSON.stringify(userContext || {})}\nCV: ${cvContext || "None"}\nTurn: ${turnCount}/12`;
-      const systemInstruction = getAetosPrompt(contextString);
-
-      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const ai = getGemini();
+      const systemInstruction = getAetosSystemInstruction(contextString);
       
-      const chat = model.startChat({
+      const chat = ai.chats.create({
+        model: GEMINI_MODEL,
+        config: {
+          systemInstruction,
+        },
         history: messages.map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }]
         }))
       });
 
-      const response = await chat.sendMessage(`SYSTEM_INSTRUCTION: ${systemInstruction}\n\nUSER: ${userMessage}`);
+      const response = await chat.sendMessage({ message: userMessage });
       
-      const text = response.response.text();
+      const text = response.text;
       setTurnCount(prev => prev + 1);
       
       if (text.includes("---SYNTHESIS_COMPLETE---")) {
@@ -347,12 +345,23 @@ export function AetosChat({ userContext, onComplete, autoTriggerCV, sessionId, o
       }
     } catch (error: any) {
       console.error(error);
-      const isDomainError = error.message?.includes("unauthorized-domain");
+      const errorMsg = error.message || "";
+      const isDomainError = errorMsg.includes("unauthorized-domain");
+      const isApiKeyError = errorMsg.includes("GEMINI_API_KEY");
+      
+      let displayContent = "Neural Link Disrupted: A cognitive conflict has delayed the synthesis. Please retry your last transmission or check your network link.";
+      
+      if (isDomainError) {
+        displayContent = "CRITICAL: Domain access denied. This URL must be whitelisted in the Firebase Console (Authentication > Settings > Authorized Domains).";
+      } else if (isApiKeyError) {
+        displayContent = `ERROR: Gemini API Key configuration issue. ${errorMsg}`;
+      } else if (errorMsg) {
+        displayContent = `Neural Link Error: ${errorMsg}`;
+      }
+
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: isDomainError 
-          ? "CRITICAL: Domain access denied. This URL must be whitelisted in the Firebase Console (Authentication > Settings > Authorized Domains)." 
-          : "Neural Link Disrupted: A cognitive conflict has delayed the synthesis. Please retry your last transmission or check your network link." 
+        content: displayContent
       }]);
     } finally {
       setIsLoading(false);

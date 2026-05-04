@@ -2,7 +2,6 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import cors from "cors";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 async function startServer() {
   const app = express();
@@ -37,41 +36,6 @@ async function startServer() {
         }
       }
     });
-  });
-
-  // 2. CV Loom - Semantic Optimization (Backend for security/API key isolation)
-  app.post("/api/cv-loom/optimize", async (req, res) => {
-    const { cvText, jobDescription } = req.body;
-    
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "GEMINI_API_KEY not configured" });
-    }
-
-    try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      
-      const prompt = `
-        You are the Aetos Ingestion Protocol. 
-        TASK: Semantically align the provided CV to the Target Job Description.
-        RULES:
-        1. STRATEGY: Do not just list skills. Explain how the candidate's specific "Echo" (their behavioral patterns) fits this specific role.
-        2. STORYTELLING: Use the Aetos brand voice (intriguing, high-fidelity, cognitive).
-        3. OUTPUT: Return plain text markdown that the user can use for their resume.
-
-        CV:
-        ${cvText}
-
-        TARGET JOB:
-        ${jobDescription}
-      `;
-
-      const result = await model.generateContent(prompt);
-      res.json({ optimizedCv: result.response.text() });
-    } catch (error) {
-      console.error("CV Loom Error:", error);
-      res.status(500).json({ error: "Failed to optimize CV" });
-    }
   });
 
   // Vite middleware for development

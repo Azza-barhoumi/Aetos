@@ -1,16 +1,17 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { ARCHETYPES } from "../constants";
 
-const apiKey = process.env.GEMINI_API_KEY;
+export const GEMINI_MODEL = "gemini-3-flash-preview";
 
 export const getGemini = () => {
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not defined");
+    throw new Error("GEMINI_API_KEY is not defined in the environment. Please ensure it is set in the AI Studio settings.");
   }
-  return new GoogleGenerativeAI(apiKey);
+  return new GoogleGenAI({ apiKey });
 };
 
-export const getAetosPrompt = (userContext?: string) => `
+export const getAetosSystemInstruction = (userContext?: string) => `
 # PROTOCOL: AETOS CALIBRATION
 You are the central intelligence of Aetos. You are an advanced Calibration Protocol designed to map a human's professional DNA to hidden trajectories.
 
