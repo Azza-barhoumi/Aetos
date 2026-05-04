@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { auth, signInWithGoogle, logout } from "../services/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 
-export function Header({ onStepChange }: { onStepChange?: (step: any) => void }) {
+export function Header({ onStepChange, onLogin }: { onStepChange?: (step: any) => void, onLogin?: () => void }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function Header({ onStepChange }: { onStepChange?: (step: any) => void })
             </div>
           ) : (
             <button 
-              onClick={signInWithGoogle}
+              onClick={onLogin}
               className="flex items-center gap-2 px-6 py-2 rounded-full bg-ambition text-midnight hover:scale-105 active:scale-95 transition-all font-mono text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-ambition/10"
             >
               <LogIn className="w-4 h-4" />

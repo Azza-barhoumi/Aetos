@@ -31,21 +31,34 @@ export default function App() {
   const [shouldTriggerCV, setShouldTriggerCV] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
+  const [loginError, setLoginError] = useState<string | null>(null);
+
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthLoading(false);
+      if (u) setLoginError(null);
     });
   }, []);
 
+  const handleLogin = async () => {
+    try {
+      setAuthLoading(true);
+      await signInWithGoogle();
+      setLoginError(null);
+    } catch (error: any) {
+      console.error("Login failed", error);
+      setLoginError(error.message || "Login failed. Check your connection or popup settings.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleStepChange = async (newStep: JourneyStep) => {
     if (!user && newStep !== 'landing') {
-      try {
-        const u = await signInWithGoogle();
-        if (u) setStep(newStep);
-      } catch (error) {
-        console.error("Login canceled or failed");
-      }
+      await handleLogin();
+      // Only change step if login succeeded
+      if (auth.currentUser) setStep(newStep);
       return;
     }
     setStep(newStep);
@@ -89,7 +102,15 @@ export default function App() {
       <div className="fixed inset-0 data-grid-bg opacity-10 pointer-events-none" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] mythic-gradient opacity-40 pointer-events-none blur-3xl" />
       
-      <Header onStepChange={handleStepChange} />
+      <Header onStepChange={handleStepChange} onLogin={handleLogin} />
+      
+      {loginError && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-xs font-mono backdrop-blur-md flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          {loginError}
+          <button onClick={() => setLoginError(null)} className="ml-4 hover:text-white">✕</button>
+        </div>
+      )}
       
       {user && (
         <SessionSidebar 
@@ -113,7 +134,7 @@ export default function App() {
               <Blueprint />
               <Features />
               <LivePulse />
-              <CTA onStart={() => handleStepChange('conversation')} user={user} />
+              <CTA onStart={() => handleStepChange('conversation')} onLogin={handleLogin} user={user} />
               
               <div className="flex justify-center mt-12 mb-20 px-6">
                 {!user ? (
@@ -121,7 +142,7 @@ export default function App() {
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    onClick={signInWithGoogle}
+                    onClick={handleLogin}
                     className="group relative flex items-center gap-6 px-14 py-8 glass-dark border-2 border-ambition/20 hover:border-ambition rounded-[2rem] transition-all overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-ambition/5 group-hover:bg-ambition/10 transition-colors" />

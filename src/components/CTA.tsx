@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Bird, Sparkles } from "lucide-react";
 import { signInWithGoogle } from "../services/firebase";
 
-export function CTA({ onStart, user }: { onStart: () => void, user: any }) {
+export function CTA({ onStart, onLogin, user }: { onStart: () => void, onLogin: () => void, user: any }) {
   return (
     <section className="py-40 px-6">
       <div className="max-w-5xl mx-auto relative">
@@ -34,7 +34,7 @@ export function CTA({ onStart, user }: { onStart: () => void, user: any }) {
             <div className="pt-8">
               {!user ? (
                 <button 
-                  onClick={signInWithGoogle}
+                  onClick={onLogin}
                   className="group relative inline-flex items-center gap-4 px-12 py-6 bg-ambition text-midnight font-black rounded-2xl hover:scale-105 active:scale-95 transition-all text-sm uppercase tracking-[.2em] shadow-2xl shadow-ambition/20"
                 >
                   Create Account via Google

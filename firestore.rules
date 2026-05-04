@@ -16,10 +16,7 @@ service cloud.firestore {
 
     // --- REUSABLE VALIDATORS ---
     function isValidUser(data) {
-      return data.keys().hasAll(['userId', 'email', 'createdAt']) 
-        && data.userId == request.auth.uid
-        && data.email is string && data.email.size() <= 200
-        && data.createdAt == request.time;
+      return isSignedIn() && data.userId == request.auth.uid;
     }
 
     function isValidPersona(data) {
