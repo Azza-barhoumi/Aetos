@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Base user profile containing metadata and PAE embedding.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "pae": { "type": "array", "description": "256-dim Professional Archetype Embedding" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email", "createdAt"]
+    },
+    "WorkplacePersona": {
+      "title": "Workplace Persona",
+      "description": "The 64-dimensional continuous vector representing traits.",
+      "type": "object",
+      "properties": {
+        "dimensions": { "type": "object", "description": "Key-value pairs of trait scores and certainty." },
+        "lastDeepDiveAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Career": {
+      "title": "Career Node",
+      "description": "A node in the Career Knowledge Graph.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "zScoreWeight": { "type": "object" },
+        "marketDemand": { "type": "string", "enum": ["High", "Medium", "Low"] },
+        "requiredSkills": { "type": "array" }
+      }
+    },
+    "TrajectoryPlan": {
+      "title": "Trajectory Plan",
+      "description": "The sequence of steps to reach a career goal.",
+      "type": "object",
+      "properties": {
+        "targetCareerId": { "type": "string" },
+        "steps": { "type": "array", "description": "Ordered list of courses or actions." },
+        "estimatedTimeToEmployability": { "type": "number" },
+        "active": { "type": "boolean" }
+      }
+    },
+    "CareerPassport": {
+      "title": "Career Passport",
+      "description": "Anonymized profile for B2B sharing.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "anonymizedId": { "type": "string" },
+        "verifiedSkills": { "type": "array" },
+        "personaGlimpse": { "type": "object" },
+        "zScore": { "type": "number" },
+        "targetJobId": { "type": "string" }
+      }
+    },
+    "ChatSession": {
+      "title": "Chat Session",
+      "description": "A conversation session between user and Aetos.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "messages": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "revelation": { "type": "object" },
+        "cvName": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user profiles."
+    },
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": "ChatSession",
+      "description": "Stored chat interactions."
+    },
+    "/users/{userId}/persona/v1": {
+      "schema": "WorkplacePersona",
+      "description": "Detailed trait data."
+    },
+    "/users/{userId}/trajectories/{planId}": {
+      "schema": "TrajectoryPlan",
+      "description": "User specific career paths."
+    },
+    "/careers/{careerId}": {
+      "schema": "Career",
+      "description": "Global knowledge graph of careers."
+    },
+    "/passports/{passportId}": {
+      "schema": "CareerPassport",
+      "description": "Shared anonymized profiles for recruiters."
+    }
+  }
+}

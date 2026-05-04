@@ -1,0 +1,10 @@
+{
+  "name": "Aetos",
+  "description": "The Aetos Calibration Protocol. An advanced intelligence that deciphers your professional DNA to reveal the unseen trajectories you were built for.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}
