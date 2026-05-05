@@ -7,22 +7,22 @@ export const getGemini = () => {
   // Robust check for various environments (Vite, Vercel, Node, AI Studio)
   const apiKey = 
     (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || 
+    (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) ||
     (import.meta as any).env?.VITE_GEMINI_API_KEY ||
-    (import.meta as any).env?.GEMINI_API_KEY ||
-    process.env?.VITE_GEMINI_API_KEY;
+    (import.meta as any).env?.GEMINI_API_KEY;
   
-  if (!apiKey || apiKey === "undefined" || apiKey === "null") {
-    const isProd = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
-    console.warn(
-      isProd 
-        ? "[AETOS] API Key missing in Production (Vite/Vercel). Please ensure 'VITE_GEMINI_API_KEY' is set in your environment variables."
-        : "[AETOS] GEMINI_API_KEY not detected. Please set it in the AI Studio Secrets panel."
-    );
+  if (!apiKey || apiKey === "undefined" || apiKey === "null" || apiKey === "") {
+    const isProd = window.location.hostname !== 'localhost' && !window.location.hostname.includes('ais-dev');
+    const message = isProd 
+      ? "CRITICAL: API Key missing. In Vercel, you MUST add 'VITE_GEMINI_API_KEY' to your Environment Variables and redeploy."
+      : "GEMINI_API_KEY not detected. Please ensure it is set in the AI Studio Secrets panel.";
+    
+    console.error(`[AETOS] ${message}`);
+    // Throw a specific error that the UI can catch and explain
+    throw new Error(`GEMINI_API_KEY is missing. ${message}`);
   }
 
-  // Fallback to empty string to prevent the SDK from crashing during init
-  // It will throw a structured error later which we catch in the UI
-  return new GoogleGenAI({ apiKey: apiKey || "" });
+  return new GoogleGenAI({ apiKey });
 };
 
 export const getAetosSystemInstruction = (userContext?: string) => `
